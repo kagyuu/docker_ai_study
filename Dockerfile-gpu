@@ -1,0 +1,25 @@
+FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
+
+ARG PASSWD
+
+# To avoid the command prompt for the timezon setting
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y tzdata
+ENV TZ=Asia/Tokyo 
+
+# Install Openssh
+RUN apt-get update && apt-get install -y openssh-server
+RUN mkdir /var/run/sshd
+RUN echo 'root:'${PASSWD} | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication/PasswordAuthentication/' /etc/ssh/sshd_config
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+# Install Development Environment
+RUN apt-get update && apt-get install -y git python3-pip
+RUN pip3 install pipenv
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
