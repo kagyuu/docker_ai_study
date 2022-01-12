@@ -32,7 +32,11 @@ $ ssh -p 2222 root@localhost
 
 ## Local Volumes
 
-* [TO BE DONE, I'm little tired tonight.]
+|Host                |Container          | |
+|--------------------|--------|------------|
+|/var/keras-data     |ssh     |/root/Documents|
+|/var/pgsql-data/data|pgsql   |/var/lib/postgresql/data|
+|/var/pgadmin-data   |pgadmin4|/var/lib/pgadmin|
 
 ## Tips
 
