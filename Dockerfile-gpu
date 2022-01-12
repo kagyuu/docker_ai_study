@@ -2,13 +2,15 @@ FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
 
 ARG PASSWD
 
+RUN apt update && apt -y upgrade
+
 # To avoid the command prompt for the timezon setting
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y tzdata
+RUN apt install -y tzdata
 ENV TZ=Asia/Tokyo 
 
 # Install Openssh
-RUN apt-get update && apt-get install -y openssh-server
+RUN apt install -y openssh-server
 RUN mkdir /var/run/sshd
 RUN echo 'root:'${PASSWD} | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -18,8 +20,18 @@ RUN sed -i 's/#PasswordAuthentication/PasswordAuthentication/' /etc/ssh/sshd_con
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 # Install Development Environment
-RUN apt-get update && apt-get install -y git python3-pip
-RUN pip3 install pipenv
+RUN apt-get install -y git curl wget vim iputils-ping net-tools lynx bash-completion 
+RUN apt-get install -y python3 python3-venv
+RUN apt-get install -y postgresql-client
+RUN apt-get install -y openjdk-11-jdk maven ant gradle
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs && node -v
+RUN npm install typescript -g
+
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 - 
+RUN echo "export PATH=$PATH:/root/.local/bin" >> /root/.bashrc
+RUN /root/.local/bin/poetry --version
+RUN /root/.local/bin/poetry completions bash > poetry.bash-completion && mv poetry.bash-completion /etc/bash_completion.d/
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]

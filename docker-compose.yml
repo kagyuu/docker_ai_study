@@ -8,7 +8,8 @@ services:
     ports:
       - '2222:22'
     volumes:
-      - /data/keras-workspace:/root/Documents
+      # $ sudo chown -R 0:0 <host_directory>
+      - /var/keras-data:/root/Documents
     deploy:
       resources:
         reservations:
@@ -16,35 +17,35 @@ services:
             - driver: nvidia
               count: 1
               # device_ids: ['0', '3']
-              capabilities: [gpu]
+              capabilities: [ gpu ]
+    #restart: always
 
   postgres:
-      image: postgres:latest
-      container_name: postgres
-      ports:
-          - 5432:5432
-      volumes:
-          - /data/postgres-data/initdb.d:/docker-entrypoint-initdb.d
-          - /data/postgres-data/pgdata:/var/lib/postgresql/data
-      environment:
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: root
-          POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
-      hostname: postgres
-      restart: always
-      user: root
+    image: postgres:latest
+    container_name: postgres
+    user: 5050:5050
+    volumes:
+      # $ sudo chown -R 5050:5050 <host_directory>
+      - /var/pgsql-data/initdb.d/:/docker-entrypoint-initdb.d/
+      - /var/pgsql-data/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    hostname: postgres
+    #restart: always
 
   pgadmin4:
-      image: dpage/pgadmin4:latest
-      container_name: pgadmin4
-      ports:
-          - 8000:80
-      volumes:
-          - /data/postgres-data/pgadmin4:/var/lib/pgadmin
-      environment:
-          PGADMIN_DEFAULT_EMAIL: root@example.com
-          PGADMIN_DEFAULT_PASSWORD: root
-      hostname: pgadmin4
-      depends_on:
-        - postgres
-      restart: always
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin4
+    volumes:
+      # $ sudo chown -R 5050:5050 <host_directory>
+      - /var/pgadmin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: root@example.com
+      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DISABLE_POSTFIX: "False"
+    hostname: pgadmin4
+    depends_on:
+      - postgres
+    #restart: always
