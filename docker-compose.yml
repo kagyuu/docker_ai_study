@@ -1,15 +1,18 @@
+version: "3.9"
 services:
   keras:
     build:
       context: .
       dockerfile: Dockerfile-gpu
-      args:
-        - PASSWD=${PASSWD}
+    secrets:
+      - user_ssh_pub
+      - user_git_key
+      - user_git_config
     ports:
       - '2222:22'
     volumes:
       # $ sudo chown -R 0:0 <host_directory>
-      - /var/keras-data:/root/Documents
+      - /var/keras-data:/root/workspace
     deploy:
       resources:
         reservations:
@@ -49,3 +52,12 @@ services:
     depends_on:
       - postgres
     #restart: always
+
+secrets:
+  user_ssh_pub:
+    file: ~/.ssh/id_rsa.pub
+  user_git_key:
+    file: ~/.ssh/id_rsa.github
+  user_git_config:
+    file: ~/.ssh/config
+

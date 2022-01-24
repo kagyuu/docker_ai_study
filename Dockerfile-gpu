@@ -1,37 +1,44 @@
 FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
 
-ARG PASSWD
-
-RUN apt update && apt -y upgrade
-
 # To avoid the command prompt for the timezon setting
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt install -y tzdata
 ENV TZ=Asia/Tokyo 
 
+RUN apt-get update && apt-get install -y apt-utils curl
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+
+RUN apt-get update \
+&& apt-get -y upgrade \
+&& apt-get install -y openssh-server \
+build-essential swig \
+python3 python3-venv python3-pip python3-dev \
+openjdk-11-jdk maven ant gradle \
+nodejs \
+postgresql-client \
+git wget curl vim iproute2 iputils-ping bash-completion \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g sort-package-json npm-check-updates typescript ts-node tslab
+
+#####
 # Install Openssh
-RUN apt install -y openssh-server
 RUN mkdir /var/run/sshd
-RUN echo 'root:'${PASSWD} | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication/PasswordAuthentication/' /etc/ssh/sshd_config
 
 # SSH login fix. Otherwise user is kicked off after login
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
-# Install Development Environment
-RUN apt-get install -y git curl wget vim iputils-ping net-tools lynx bash-completion 
-RUN apt-get install -y python3 python3-venv
-RUN apt-get install -y postgresql-client
-RUN apt-get install -y openjdk-11-jdk maven ant gradle
-
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs && node -v
-RUN npm install typescript -g
-
+#####
+# Install Poetry
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 - 
 RUN echo "export PATH=$PATH:/root/.local/bin" >> /root/.bashrc
-RUN /root/.local/bin/poetry --version
 RUN /root/.local/bin/poetry completions bash > poetry.bash-completion && mv poetry.bash-completion /etc/bash_completion.d/
 
 EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
+CMD mkdir ~/.ssh && \
+    cat /run/secrets/user_ssh_pub >> ~/.ssh/authorized_keys && \
+    chmod 0600 ~/.ssh/authorized_keys &&  \
+    cp /run/secrets/user_git_config ~/.ssh/config &&  \
+    cp /run/secrets/user_git_key ~/.ssh/id_rsa.github &&  \
+    /usr/sbin/sshd -D
