@@ -36,7 +36,7 @@ RUN echo "export PATH=$PATH:/root/.local/bin" >> /root/.bashrc
 RUN /root/.local/bin/poetry completions bash > poetry.bash-completion && mv poetry.bash-completion /etc/bash_completion.d/
 
 EXPOSE 22
-CMD mkdir ~/.ssh && \
+CMD mkdir -p ~/.ssh && \
     cat /run/secrets/user_ssh_pub >> ~/.ssh/authorized_keys && \
     chmod 0600 ~/.ssh/authorized_keys &&  \
     cp /run/secrets/user_git_config ~/.ssh/config &&  \

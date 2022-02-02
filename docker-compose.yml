@@ -21,7 +21,7 @@ services:
               count: 1
               # device_ids: ['0', '3']
               capabilities: [ gpu ]
-    #restart: always
+    restart: always
 
   postgres:
     image: postgres:latest
@@ -36,7 +36,7 @@ services:
       POSTGRES_PASSWORD: root
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
     hostname: postgres
-    #restart: always
+    restart: always
 
   pgadmin4:
     image: dpage/pgadmin4:latest
@@ -51,13 +51,13 @@ services:
     hostname: pgadmin4
     depends_on:
       - postgres
-    #restart: always
+    restart: always
 
 secrets:
   user_ssh_pub:
-    file: ~/.ssh/id_rsa.pub
+    file: /home/atsushi/.ssh/id_rsa.pub
   user_git_key:
-    file: ~/.ssh/id_rsa.github
+    file: /home/atsushi/.ssh/id_rsa.github
   user_git_config:
-    file: ~/.ssh/config
+    file: /home/atsushi/.ssh/config
 
