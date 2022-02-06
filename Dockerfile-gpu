@@ -2,29 +2,36 @@ FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
 
 # To avoid the command prompt for the timezon setting
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Tokyo 
+ENV TZ=ETC/UTC 
 
-RUN apt-get update && apt-get install -y apt-utils curl
+# Add 3rd party's apt repositiories.
+RUN apt-get update \
+&& apt-get -y install apt-utils curl wget lsb-release
+
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+# Unminimze Ubuntu image.
 RUN apt-get update \
 && apt-get -y upgrade \
-&& apt-get install -y openssh-server \
-build-essential swig \
-python3 python3-venv python3-pip python3-dev \
-openjdk-11-jdk maven ant gradle \
-nodejs \
-postgresql-client \
-git wget curl vim iproute2 iputils-ping bash-completion \
+&& yes | unminimize \
+&& apt-get -y install vim iputils-ping iproute2 git \
+openssh-server \
+python3 python3-venv python3-pip \
+default-jdk maven ant gradle \
+nodejs postgresql-client \
+libreadline-gplv2-dev libncursesw5-dev libsqlite3-dev tk-dev libgdbm-dev libgdbm-compat-dev \
+libbz2-dev libssl-dev libsqlite3-dev libffi-dev liblzma-dev \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g sort-package-json npm-check-updates typescript ts-node tslab
+RUN npm install -g npm && npm install -g yarn sort-package-json npm-check-updates typescript ts-node tslab
 
 #####
 # Install Openssh
-RUN mkdir /var/run/sshd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN mkdir -p /var/run/sshd && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 # SSH login fix. Otherwise user is kicked off after login
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
@@ -33,7 +40,16 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 # Install Poetry
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 - 
 RUN echo "export PATH=$PATH:/root/.local/bin" >> /root/.bashrc
-RUN /root/.local/bin/poetry completions bash > poetry.bash-completion && mv poetry.bash-completion /etc/bash_completion.d/
+RUN mkdir -p /etc/bash_completion.d/ && /root/.local/bin/poetry completions bash > /etc/bash_completion.d/poetry.bash-completion
+
+#####
+# Build Python 3.10 from its source.
+RUN cd /root \
+&& yes | git clone https://github.com/python/cpython.git -b 3.10 \
+&& cd cpython \
+&& ./configure --enable-optimizations | tee configure.log \
+&& make -j$(nproc) | tee build.log \
+&& make altinstall
 
 EXPOSE 22
 CMD mkdir -p ~/.ssh && \
