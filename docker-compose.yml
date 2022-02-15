@@ -11,7 +11,7 @@ services:
     ports:
       - '2222:22'
     volumes:
-      # $ sudo chown -R 0:0 <host_directory>
+      # $ sudo chown -R 5000:5000 /var/keras-data
       - /var/keras-data:/home/aichan/workspace
     deploy:
       resources:

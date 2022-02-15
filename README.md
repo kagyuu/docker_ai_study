@@ -35,7 +35,7 @@ A docker-compose script for studying AI.
     ```
 * Login
     ```
-    $ ssh -p 2222 root@localhost
+    $ ssh -p 2222 aichan@localhost
     ````
 * So, we can also use remote VS-Code envionment which connect to this container by SSH connection.
 
@@ -55,9 +55,9 @@ A docker-compose script for studying AI.
 
 |Host                |Container |          |
 |--------------------|--------|------------|
-|/var/keras-data     |ssh     |/root/workspace|
+|/var/keras-data     |keras   |/home/aichan/workspace|
 |/var/pgsql-data/data|pgsql   |/var/lib/postgresql/data|
 |/var/pgadmin-data   |pgadmin4|/var/lib/pgadmin|
-|~/.ssh/id_rsa.pub   |        |/root/.ssh/authorized_keys|
-|~/.ssh/id_rsa.github|        |/root/.ssh/id_rsa.github|
-|~/.ssh/config       |        |/root/.ssh/config|
+|~/.ssh/id_rsa.pub   |keras   |/home/aichan/.ssh/authorized_keys|
+|~/.ssh/id_rsa.github|keras   |/home/aichan/.ssh/id_rsa.github|
+|~/.ssh/config       |keras   |/home/aichan/.ssh/config|
