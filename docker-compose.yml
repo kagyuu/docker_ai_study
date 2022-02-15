@@ -12,7 +12,7 @@ services:
       - '2222:22'
     volumes:
       # $ sudo chown -R 0:0 <host_directory>
-      - /var/keras-data:/root/workspace
+      - /var/keras-data:/home/aichan/workspace
     deploy:
       resources:
         reservations:

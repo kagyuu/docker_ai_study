@@ -17,7 +17,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt-get update \
 && apt-get -y upgrade \
 && yes | unminimize \
-&& apt-get -y install vim iputils-ping iproute2 git \
+&& apt-get -y install vim iputils-ping iproute2 git sudo \
 openssh-server \
 python3 python3-venv python3-pip \
 default-jdk maven ant gradle \
@@ -51,10 +51,16 @@ RUN cd /root \
 && make -j$(nproc) | tee build.log \
 && make altinstall
 
+ARG USER=aichan
+ARG PASSWD=passwd
+RUN groupadd -g 5000 ${USER} && useradd -m -s /bin/bash ${USER} -u 5000 -g 5000 && gpasswd -a ${USER} sudo
+RUN echo "${USER}:${PASSWD}" | sudo chpasswd
+
 EXPOSE 22
-CMD mkdir -p ~/.ssh && \
-    cat /run/secrets/user_ssh_pub >> ~/.ssh/authorized_keys && \
-    chmod 0600 ~/.ssh/authorized_keys &&  \
-    cp /run/secrets/user_git_config ~/.ssh/config &&  \
-    cp /run/secrets/user_git_key ~/.ssh/id_rsa.github &&  \
+CMD mkdir -p /home/aichan/.ssh && \
+    cat /run/secrets/user_ssh_pub >> /home/aichan/.ssh/authorized_keys && \
+    chmod 0600 /home/aichan/.ssh/authorized_keys &&  \
+    cp /run/secrets/user_git_config /home/aichan/.ssh/config &&  \
+    cp /run/secrets/user_git_key /home/aichan/.ssh/id_rsa.github &&  \
+    chown -R aichan:aichan /home/aichan/.ssh && \
     /usr/sbin/sshd -D
