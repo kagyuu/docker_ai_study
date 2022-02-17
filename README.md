@@ -4,7 +4,7 @@ A docker-compose script for studying AI.
 ## How to use it
 
 * Prepare
-    * this docker build script copies settings of ssh-server and github-client to the container.
+    * This docker build script copies settings of ssh-server and github-client to the container each booting.
     * So you have to setup for ssh access.
     * And setup for accessing GitHub.
     1. Create a key pair. You shold make passphrase empty.
@@ -22,6 +22,11 @@ A docker-compose script for studying AI.
         HostName github.com
         IdentityFile ~/.ssh/id_rsa.github
         User git
+        ```
+    * You also have to initial bash settings once, because the container mounts /var/keras-work on the host to /home/aichan on the container.
+        ```
+        $ sudo cp /etc/skel /var/keras-work
+        $ chown 5000:5000 -R /var/keras-work
         ```
 
 * Build
@@ -55,7 +60,7 @@ A docker-compose script for studying AI.
 
 |Host                |Container |          |
 |--------------------|--------|------------|
-|/var/keras-data     |keras   |/home/aichan/workspace|
+|/var/keras-data     |keras   |/home/aichan|
 |/var/pgsql-data/data|pgsql   |/var/lib/postgresql/data|
 |/var/pgadmin-data   |pgadmin4|/var/lib/pgadmin|
 |~/.ssh/id_rsa.pub   |keras   |/home/aichan/.ssh/authorized_keys|
