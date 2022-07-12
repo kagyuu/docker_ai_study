@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.4.1-devel-ubuntu20.04
+FROM nvidia/cuda:11.7.0-devel-ubuntu22.04
 
 # To avoid the command prompt for the timezon setting
 ENV DEBIAN_FRONTEND=noninteractive
@@ -21,11 +21,13 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt-get update \
 && apt-get -y install vim iputils-ping iproute2 git sudo htop \
 openssh-server \
-python3 python3-venv python3-pip python3-dev swig \
-default-jdk maven ant gradle \
+python3 python3-venv python3-pip \
+openjdk-17-jdk maven ant gradle \
 nodejs postgresql-client \
-libreadline-gplv2-dev libncursesw5-dev libsqlite3-dev tk-dev libgdbm-dev libgdbm-compat-dev \
-libbz2-dev libssl-dev libsqlite3-dev libffi-dev liblzma-dev libpq-dev \
+# -- these libs are needed for building cpython ---
+#python3-dev swig \
+#libreadline-gplv2-dev libncursesw5-dev libsqlite3-dev tk-dev libgdbm-dev libgdbm-compat-dev \
+#libbz2-dev libssl-dev libsqlite3-dev libffi-dev liblzma-dev libpq-dev \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 
@@ -46,12 +48,12 @@ RUN mkdir -p /etc/bash_completion.d/ && /root/.local/bin/poetry completions bash
 
 #####
 # Build Python 3.10 from its source.
-RUN cd /root \
-&& yes | git clone https://github.com/python/cpython.git -b 3.10 \
-&& cd cpython \
-&& ./configure --enable-optimizations | tee configure.log \
-&& make -j$(nproc) | tee build.log \
-&& make altinstall
+#RUN cd /root \
+#&& yes | git clone https://github.com/python/cpython.git -b 3.10 \
+#&& cd cpython \
+#&& ./configure --enable-optimizations | tee configure.log \
+#&& make -j$(nproc) | tee build.log \
+#&& make altinstall
 
 ARG USER=aichan
 ARG PASSWD=passwd
